@@ -9,7 +9,7 @@ Original file is located at
 
 import json
 import os
-#import boto3
+import boto3
 import re  # 正規表現モジュールをインポート
 from botocore.exceptions import ClientError
 import urllib.request #2025/4/29 追加
@@ -28,7 +28,7 @@ bedrock_client = None
 
 # モデルID
 #MODEL_ID = os.environ.get("MODEL_ID", "us.amazon.nova-lite-v1:0")
-MODEL_ID = "https://f6b4-34-16-246-87.ngrok-free.app"
+MODEL_ID = "https://2d66-34-125-213-245.ngrok-free.app"
 
 def lambda_handler(event, context):
     try:
@@ -87,33 +87,40 @@ def lambda_handler(event, context):
             print(f"Request failed: {e}")
             return None
 
+        # 推論結果を取得
+        response = make_prediction(data)
+        if result:
+            print("Prediction result:", response)
+        else:
+            print("Failed to get prediction.")
+
         # Nova Liteモデル用のリクエストペイロードを構築
         # 会話履歴を含める
-        #bedrock_messages = []
-        #for msg in messages:
-            #if msg["role"] == "user":
-                #bedrock_messages.append({
-                    #"role": "user",
-                    #"content": [{"text": msg["content"]}]
-                #})
-            #elif msg["role"] == "assistant":
-                #bedrock_messages.append({
-                    #"role": "assistant",
-                    #"content": [{"text": msg["content"]}]
-                #})
+        bedrock_messages = []
+        for msg in messages:
+            if msg["role"] == "user":
+                bedrock_messages.append({
+                    "role": "user",
+                    "content": [{"text": msg["content"]}]
+                })
+            elif msg["role"] == "assistant":
+                bedrock_messages.append({
+                    "role": "assistant",
+                    "content": [{"text": msg["content"]}]
+                })
 
         # invoke_model用のリクエストペイロード
-        #request_payload = {
-            #"messages": bedrock_messages,
-            #"inferenceConfig": {
-                #"maxTokens": 512,
-                #"stopSequences": [],
-                #"temperature": 0.7,
-                #"topP": 0.9
-            #}
-        #}
+        request_payload = {
+            "messages": bedrock_messages,
+            "inferenceConfig": {
+                "maxTokens": 512,
+                "stopSequences": [],
+                "temperature": 0.7,
+                "topP": 0.9
+            }
+        }
 
-        #print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
+        print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
 
         # invoke_model APIを呼び出し
         #response = bedrock_client.invoke_model(
