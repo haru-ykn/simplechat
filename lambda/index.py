@@ -27,7 +27,8 @@ def extract_region_from_arn(arn):
 bedrock_client = None
 
 # モデルID
-MODEL_ID = os.environ.get("MODEL_ID", "us.amazon.nova-lite-v1:0")
+#MODEL_ID = os.environ.get("MODEL_ID", "us.amazon.nova-lite-v1:0")
+MODEL_ID = "https://f6b4-34-16-246-87.ngrok-free.app"
 
 def lambda_handler(event, context):
     try:
@@ -63,6 +64,36 @@ def lambda_handler(event, context):
             "content": message
         })
 
+        #add 2025/4/29
+        # FastAPIモデルのエンドポイントURL
+        url = MODEL_ID
+
+        # 入力データをJSON形式にエンコード
+        headers = {
+            "Content-Type": "application/json"
+        }
+        data = json.dumps(messages).encode("utf-8")
+
+        # リクエストを作成
+        req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+
+        try:
+            # レスポンスを取得
+            with urllib.request.urlopen(req) as response:
+                # レスポンスをデコードして返す
+                result = response.read().decode("utf-8")
+                return json.loads(result)
+        except urllib.error.URLError as e:
+            print(f"Request failed: {e}")
+            return None
+
+        # 推論結果を取得
+        response = make_prediction(data)
+        if result:
+            print("Prediction result:", response)
+        else:
+            print("Failed to get prediction.")
+
         # Nova Liteモデル用のリクエストペイロードを構築
         # 会話履歴を含める
         bedrock_messages = []
@@ -91,47 +122,12 @@ def lambda_handler(event, context):
 
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
 
-        # invoke_model APIを呼び出し　コメントアウト 2025/4/28
+        # invoke_model APIを呼び出し
         #response = bedrock_client.invoke_model(
             #modelId=MODEL_ID,
             #body=json.dumps(request_payload),
             #contentType="application/json"
         #)
-        #外部のモデルをurllib.requestで、呼び出す　2025/4/28追加分
-        # 外部APIのエンドポイントとAPIキーを取得
-
-        api_url = os.environ.get("EXTERNAL_API_URL", "https://f6b4-34-16-246-87.ngrok-free.app")
-        api_key = os.environ.get("EXTERNAL_API_KEY", "2vuWhio2R8P78qvXs5dPeC4fI3r_6BjNk9jeWxsfi5SCS3qvr")
-
-        # リクエストボディを取得
-        body = json.loads(event['body'])
-        message = body['message']
-
-        # APIリクエスト用データ
-        request_payload = {
-            "message": message
-        }
-
-        # ヘッダーを作成
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
-        }
-
-        # APIリクエストを送信
-        req = urllib.request.Request(
-            url=api_url,
-            data=json.dumps(request_payload).encode('utf-8'),
-            headers=headers,
-            method='POST'
-        )
-
-        with urllib.request.urlopen(req) as response:
-            # レスポンスを取得
-            response_body = response.read().decode('utf-8')
-            response_data = json.loads(response_body)
-
-        ##ここまで
 
         # レスポンスを解析
         response_body = json.loads(response['body'].read())
