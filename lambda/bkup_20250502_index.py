@@ -28,7 +28,7 @@ bedrock_client = None
 
 # モデルID
 #MODEL_ID = os.environ.get("MODEL_ID", "us.amazon.nova-lite-v1:0")
-MODEL_ID = "https://f6b4-34-16-246-87.ngrok-free.app"
+MODEL_ID = "https://3ea2-34-142-137-47.ngrok-free.app"
 
 def lambda_handler(event, context):
     try:
@@ -77,22 +77,15 @@ def lambda_handler(event, context):
         # リクエストを作成
         req = urllib.request.Request(url, data=data, headers=headers, method="POST")
 
-        #リクエストを送信
-        result = urllib.request.urlopen(req)
-
-        #レスポンスを読み込む
-        response = result.read()
-
-        #try:
-          # レスポンスを取得
-          #with urllib.request.urlopen(req) as response:
-            # レスポンスをデコードして返す
-            #result = response.read().decode("utf-8")
-            #return json.loads(result)
-
-          #except urllib.error.URLError as e:
-            #print(f"Request failed: {e}")
-            #return None
+        try:
+            # レスポンスを取得
+            with urllib.request.urlopen(req) as response:
+                # レスポンスをデコードして返す
+                result = response.read().decode("utf-8")
+                return json.loads(result)
+        except urllib.error.URLError as e:
+            print(f"Request failed: {e}")
+            return None
 
         # Nova Liteモデル用のリクエストペイロードを構築
         # 会話履歴を含める
