@@ -9,7 +9,7 @@ Original file is located at
 
 import json
 import os
-#import boto3
+import boto3
 import re  # 正規表現モジュールをインポート
 from botocore.exceptions import ClientError
 import urllib.request #2025/4/29 追加
