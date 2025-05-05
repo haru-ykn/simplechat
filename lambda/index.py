@@ -27,7 +27,7 @@ bedrock_client = None
 
 # モデルID
 #MODEL_ID = os.environ.get("MODEL_ID", "us.amazon.nova-lite-v1:0")
-MODEL_ID = "https://f6b4-34-16-246-87.ngrok-free.app/generate"
+MODEL_ID = "https://28d9-34-87-156-136.ngrok-free.app/generate"
 
 def lambda_handler(event, context):
     try:
@@ -70,7 +70,7 @@ def lambda_handler(event, context):
         #APIの使用にあった構造に文書を成形
 
         formatted_message = {
-            "prompt": messages,
+            "prompt": message,
             "max_new_tokens": 512,
             "do_sample": True,
             "temperature": 0.7,
@@ -94,23 +94,29 @@ def lambda_handler(event, context):
         print("result:", result)
 
         #レスポンスを読み込む
-        response = result.read()
+        #response = result.read()
 
-        response_body = json.loads(response['generated_text'].read())
+        response = result.read().decode("utf-8")  # バイト型から文字列型に変換
+        response_body = json.loads(response)  # JSON文字列を辞書型に変換
+
+
+        #response_body = json.loads(response['generated_text'].read())
         print("response:", json.dumps(response_body, default=str))
 
         # 応答の検証
-        if not response_body.get('output') or not response_body['output'].get('message') or not response_body['output']['message'].get('content'):
-            raise Exception("No response content from the model")
+        #if not response_body.get('output') or not response_body['output'].get('message') or not response_body['output']['message'].get('content'):
+           # raise Exception("No response content from the model")
 
         # アシスタントの応答を取得
-        assistant_response = response_body['output']['message']['content'][0]['text']
+        #assistant_response = response_body['output']['message']['content'][0]['text']
+        assistant_response = response_body['generated_text']
+        print("Assistant response:", assistant_response)
 
         # アシスタントの応答を会話履歴に追加
-        messages.append({
-            "role": "assistant",
-            "content": assistant_response
-        })
+        #messages.append({
+           # "role": "assistant",
+           # "content": assistant_response
+        #})
 
         # 成功レスポンスの返却
         return {
@@ -123,8 +129,8 @@ def lambda_handler(event, context):
             },
             "body": json.dumps({
                 "success": True,
-                "response": assistant_response,
-                "conversationHistory": messages
+                "response": assistant_response
+                #"conversationHistory": messages
             })
         }
 
