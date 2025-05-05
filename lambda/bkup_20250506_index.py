@@ -55,13 +55,13 @@ def lambda_handler(event, context):
         print("Using model:", MODEL_ID)
 
         # 会話履歴を使用
-        #messages = conversation_history.copy()
+        messages = conversation_history.copy()
 
         # ユーザーメッセージを追加
-        #messages.append({
-            #"role": "user",
-            #"content": message
-        #})
+        messages.append({
+            "role": "user",
+            "content": message
+        })
 
         #add 2025/4/29
         # FastAPIモデルのエンドポイントURL
@@ -142,11 +142,8 @@ def lambda_handler(event, context):
         #)
 
         # レスポンスを解析
-        #response_body = json.loads(response['body'].read())
-        #print("Bedrock response:", json.dumps(response_body, default=str))
-
-        response_body = json.loads(response['generated_text'].read())
-        print("response:", json.dumps(response_body, default=str))
+        response_body = json.loads(response['body'].read())
+        print("Bedrock response:", json.dumps(response_body, default=str))
 
         # 応答の検証
         if not response_body.get('output') or not response_body['output'].get('message') or not response_body['output']['message'].get('content'):
