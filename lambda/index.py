@@ -27,7 +27,7 @@ bedrock_client = None
 
 # モデルID
 #MODEL_ID = os.environ.get("MODEL_ID", "us.amazon.nova-lite-v1:0")
-MODEL_ID = "https://f6b4-34-16-246-87.ngrok-free.app"
+MODEL_ID = "https://f6b4-34-16-246-87.ngrok-free.app/generate"
 
 def lambda_handler(event, context):
     try:
@@ -79,71 +79,22 @@ def lambda_handler(event, context):
 
         # JSON形式に変換
         data = json.dumps(formatted_message, ensure_ascii=False, indent=4).encode("utf-8")
+        print(data)
 
         # 入力データをJSON形式にエンコード
         headers = {
             "Content-Type": "application/json"
         }
-        #data = json.dumps(messages).encode("utf-8")
 
         # リクエストを作成
         req = urllib.request.Request(url, data=data, headers=headers, method="POST")
 
         #リクエストを送信
         result = urllib.request.urlopen(req)
+        print("result:", result)
 
         #レスポンスを読み込む
         response = result.read()
-
-        #try:
-          # レスポンスを取得
-          #with urllib.request.urlopen(req) as response:
-            # レスポンスをデコードして返す
-            #result = response.read().decode("utf-8")
-            #return json.loads(result)
-
-          #except urllib.error.URLError as e:
-            #print(f"Request failed: {e}")
-            #return None
-
-        # Nova Liteモデル用のリクエストペイロードを構築
-        # 会話履歴を含める
-        #bedrock_messages = []
-        #for msg in messages:
-            #if msg["role"] == "user":
-                #bedrock_messages.append({
-                    #"role": "user",
-                    #"content": [{"text": msg["content"]}]
-                #})
-            #elif msg["role"] == "assistant":
-                #bedrock_messages.append({
-                    #"role": "assistant",
-                    #"content": [{"text": msg["content"]}]
-                #})
-
-        # invoke_model用のリクエストペイロード
-        #request_payload = {
-            #"messages": bedrock_messages,
-            #"inferenceConfig": {
-                #"maxTokens": 512,
-                #"stopSequences": [],
-                #"temperature": 0.7,
-                #"topP": 0.9
-            #}
-        #}
-
-        #print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
-
-        # invoke_model APIを呼び出し
-        #response = bedrock_client.invoke_model(
-            #modelId=MODEL_ID,
-            #body=json.dumps(request_payload),
-            #contentType="application/json"
-        #)
-
-        # レスポンスを解析
-        #response_body = json.loads(response['body'].read())
-        #print("Bedrock response:", json.dumps(response_body, default=str))
 
         response_body = json.loads(response['generated_text'].read())
         print("response:", json.dumps(response_body, default=str))
