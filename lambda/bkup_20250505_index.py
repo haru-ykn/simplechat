@@ -9,10 +9,11 @@ Original file is located at
 
 import json
 import os
-#import boto3
+import boto3
 import re  # 正規表現モジュールをインポート
 from botocore.exceptions import ClientError
 import urllib.request #2025/4/29 追加
+
 
 # Lambda コンテキストからリージョンを抽出する関数
 def extract_region_from_arn(arn):
@@ -32,13 +33,13 @@ MODEL_ID = "https://f6b4-34-16-246-87.ngrok-free.app"
 def lambda_handler(event, context):
     try:
         # コンテキストから実行リージョンを取得し、クライアントを初期化
-        #global bedrock_client
-        #if bedrock_client is None:
-            #region = extract_region_from_arn(context.invoked_function_arn)
-            #bedrock_client = boto3.client('bedrock-runtime', region_name=region)
-            #print(f"Initialized Bedrock client in region: {region}")
+        global bedrock_client
+        if bedrock_client is None:
+            region = extract_region_from_arn(context.invoked_function_arn)
+            bedrock_client = boto3.client('bedrock-runtime', region_name=region)
+            print(f"Initialized Bedrock client in region: {region}")
 
-        #print("Received event:", json.dumps(event))
+        print("Received event:", json.dumps(event))
 
         # Cognitoで認証されたユーザー情報を取得
         user_info = None
@@ -67,24 +68,11 @@ def lambda_handler(event, context):
         # FastAPIモデルのエンドポイントURL
         url = MODEL_ID
 
-        #APIの使用にあった構造に文書を成形
-
-        formatted_message = {
-            "prompt": messages,
-            "max_new_tokens": 512,
-            "do_sample": True,
-            "temperature": 0.7,
-            "top_p": 0.9
-            }
-
-        # JSON形式に変換
-        data = json.dumps(formatted_message, ensure_ascii=False, indent=4).encode("utf-8")
-
         # 入力データをJSON形式にエンコード
         headers = {
             "Content-Type": "application/json"
         }
-        #data = json.dumps(messages).encode("utf-8")
+        data = json.dumps(messages).encode("utf-8")
 
         # リクエストを作成
         req = urllib.request.Request(url, data=data, headers=headers, method="POST")
